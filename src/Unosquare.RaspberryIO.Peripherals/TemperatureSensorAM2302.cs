@@ -14,7 +14,7 @@
     public class TemperatureSensorAM2302 : IDisposable
     {
         private static readonly int[] AllowedPinNumbers = new[] { 7, 11, 12, 13, 15, 16, 18, 22, 29, 31, 32, 33, 35, 36, 37, 38, 40 };
-        private static readonly TimeSpan ReadInterval = TimeSpan.FromSeconds(2);
+        private static TimeSpan ReadInterval = TimeSpan.FromSeconds(2);
         private static readonly long BitPulseMidMicroseconds = 50; // (26 ... 50)µs for false; (51 ... 76)µs for true
 
         private readonly IGpioPin DataPin;
@@ -36,11 +36,15 @@
         /// Initializes a new instance of the <see cref="TemperatureSensorAM2302" /> class.
         /// </summary>
         /// <param name="dataPin">The data pin. Must be a GPIO-only pin on the P1 Header of the Pi.</param>
+        /// <param name="readInterval">Read interval for sensor measures.</param>
         /// <exception cref="ArgumentException">dataPin When it is invalid.</exception>
-        public TemperatureSensorAM2302(IGpioPin dataPin)
+        public TemperatureSensorAM2302(IGpioPin dataPin, TimeSpan? readInterval = null)
         {
             if (AllowedPins.Contains(dataPin) == false)
                 throw new ArgumentException($"{nameof(dataPin)}, {dataPin} is not available to service this driver.");
+
+            if (readInterval != null)
+                ReadInterval = readInterval.Value;
 
             DataPin = dataPin;
             ReadWorker = new Thread(PerformContinuousReads);
